@@ -1,0 +1,45 @@
+name: JupiterOne Integration Build Pipeline
+description: Build & Release JupiterOne Integration
+inputs:
+  NPM_AUTH_TOKEN:
+    description: 'NPM Auth Token for publishing JupiterOne integratino'
+    required: true
+runs:
+  using: composite
+  steps:
+      # Build
+      - id: setup-node
+        name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Check out code repository source code
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: yarn
+      - name: Run tests
+        run: yarn test:ci
+      - name: Run build
+        run: yarn build
+
+      # Publish
+      - name: Fetch tags
+        if: github.ref == 'refs/heads/master'
+        run: |
+          git fetch --tags
+          if git describe --exact-match --match "v*.*.*" HEAD^2
+          then
+            echo "Found version commit tag. Publishing."
+            echo "publish=true" >> $GITHUB_ENV
+          else
+            echo "Version commit tag not found. Not publishing."
+          fi
+      - name: Publish
+        if: env.publish == 'true'
+        env:
+          NPM_AUTH_TOKEN: ${{ inputs.NPM_AUTH_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > .npmrc
+          yarn
+          npm publish
+        
