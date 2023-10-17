@@ -1,0 +1,10 @@
+{
+  "name": "integration-workflow-action",
+  "version": "0.0.0",
+  "description": "Automatically generated package.json, please edit manually",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JupiterOne/integration-workflow-action"
+  },
+  "license": "UNLICENSED"
+}
